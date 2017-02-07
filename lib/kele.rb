@@ -1,13 +1,15 @@
 require 'httparty'
+require 'json'
 class Kele
   include HTTParty
-  attr_accessor :user_name, :password, :bloc_base_api_url, :user_authentication_token
 
   def initialize(user_name, password)
-    @user_name = user_name
-    @password = password
-    auth = {email: user_name, password: password}
-    @bloc_base_api_url = 'https://www.bloc.io/api/v1'
-    @user_authentication_token = self.class.post('https://www.bloc.io/api/v1/sessions', auth)
+    response = self.class.post(base_api_endpoint("sessions"), body: {email: username, password: password})
+    @auth = response["auth_token"]
+  end
+
+  def get_me
+    response = self.class.get(bloc_base_api_url, headers: { "authorization" => @auth })
+    @current_user = JSON.parse(response.body)
   end
 end
